@@ -22,7 +22,27 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
+*.tsbuildinfo
+*.tar
+*.zip
+*.iml
+*.launch.json
+# 构建输出
+build
+# 测试
+coverage
+# 临时文件
+temp
+# 打包
+dist
+# 依赖
+node_modules
+# 缓存
+.cache
+# 编辑器
+*.code-workspace
+# 编辑器备份
+.vscode-test
 # 环境变量
 .env.local
 .env.*.local

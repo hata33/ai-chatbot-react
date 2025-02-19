@@ -10,9 +10,7 @@ const ChatContainer: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   const {
-    messages,
-    input,
-    setInput,
+    messages, 
     isFetching,
     chatSessions,
     messagesEndRef,
@@ -98,9 +96,7 @@ const ChatContainer: React.FC = () => {
 
         {/* 底部输入区域 */}
         <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shrink-0">
-          <ChatInput
-            input={input}
-            setInput={setInput}
+          <ChatInput 
             isFetching={isFetching}
             onSendMessage={sendMessage}
             onKeyPress={handleKeyPress}

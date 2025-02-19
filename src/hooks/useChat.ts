@@ -5,6 +5,7 @@ import { http } from '@/utils/request';
 import { generateUUID } from '@/utils/utils';
 import { Message } from '@/components/ChatMessage';
 import { useStore } from '@/store/store';
+import { useDraftStorage } from './useDraftStorage';
 
 export const useChat = () => {
   // 状态管理
@@ -22,6 +23,13 @@ export const useChat = () => {
   const { id: urlId } = useParams<{ id: string }>();
   const { currentChatId, setCurrentChatId } = useStore();
   const chatId = useRef(urlId || currentChatId || generateUUID());
+
+  // 使用 useDraftStorage hook
+  const { clearDraft } = useDraftStorage({
+    initialInput: input,
+    setInput,
+    chatId: chatId.current,
+  });
 
   // 监听 URL 变化，更新当前对话 ID
   useEffect(() => {
@@ -131,7 +139,7 @@ export const useChat = () => {
       }
 
       // 清空草稿
-      localStorage.removeItem(`chat_draft_${chatId.current}`);
+      clearDraft();
     } catch (error: any) {
       console.error('Error:', error);
       toast.error(error.message || '发送消息失败，请稍后重试');

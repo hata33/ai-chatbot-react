@@ -2,11 +2,23 @@ import { Navigate, RouteObject } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { useStore } from '@/store/store';
 
-// 懒加载组件
-const AppLayout = lazy(() => import('@/pages/AppLayout.tsx'));
-const Login = lazy(() => import('@/pages/Auth/Login.tsx'));
-const Register = lazy(() => import('@/pages/Auth/Register.tsx'));
-const Chat = lazy(() => import('@/pages/Chat/Chat.tsx'));
+// 错误边界组件
+const ErrorBoundary = () => {
+  return (
+    <div className="flex h-screen w-screen items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Oops! Something went wrong</h1>
+        <p className="text-gray-600 mb-4">Please try refreshing the page</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600"
+        >
+          Refresh Page
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // 加载提示组件
 const LoadingFallback = () => (
@@ -14,6 +26,12 @@ const LoadingFallback = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
   </div>
 );
+
+// 懒加载组件
+const AppLayout = lazy(() => import('@/pages/AppLayout'));
+const Login = lazy(() => import('@/pages/Auth/Login'));
+const Register = lazy(() => import('@/pages/Auth/Register'));
+const Chat = lazy(() => import('@/pages/Chat/Chat'));
 
 // 路由守卫组件
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -46,6 +64,7 @@ export const routes: RouteObject[] = [
         <AppLayout />
       </Suspense>
     ),
+    errorElement: <ErrorBoundary />,
     children: [
       {
         index: true,

@@ -7,6 +7,7 @@ import { FiMenu, FiSend } from 'react-icons/fi';
 import { RiRobot2Line } from 'react-icons/ri';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { http } from '@/utils/request';
 
 interface Message {
   id: string;
@@ -57,15 +58,9 @@ const Chat: React.FC = () => {
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
-
   // 发送消息
   const sendMessage = async () => {
     if (!input.trim() || isFetching) return;
-    if (!token) {
-      toast.error('请先登录');
-      navigate('/login');
-      return;
-    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -78,27 +73,17 @@ const Chat: React.FC = () => {
     setIsFetching(true);
 
     try {
-      const response = await fetch(`/api/chat/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          message: userMessage.content,
-          model: "deepseek-chat" || currentModel,
-          history: messages.slice(-3)
-        })
+      // 转换消息格式
+      const formattedMessages = [
+        { role: "system", content: "You are a helpful assistant." },
+        ...messages.map(msg => ({ role: msg.role, content: msg.content })),
+        { role: userMessage.role, content: userMessage.content }
+      ];
+
+      const response = await http.stream('chat', {
+        messages: formattedMessages,
+        model: "deepseek-chat",
       });
-
-      if (response.status === 401) {
-        toast.error('登录已过期，请重新登录');
-        useStore.getState().logout();
-        navigate('/login');
-        return;
-      }
-
-      if (!response.ok) throw new Error('Failed to send message');
 
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No response reader');
@@ -111,25 +96,30 @@ const Chat: React.FC = () => {
         if (done) break;
 
         const chunk = decoder.decode(value);
-        assistantMessage += chunk;
 
-        setMessages(prev => {
-          const newMessages = [...prev];
-          if (newMessages[newMessages.length - 1]?.role === 'assistant') {
-            newMessages[newMessages.length - 1].content = assistantMessage;
-          } else {
-            newMessages.push({
-              id: Date.now().toString(),
-              role: 'assistant',
-              content: assistantMessage
+        const lines = chunk.split('\n\n').filter((line) => line.trim());
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            if (line.slice(6)==='[DONE]') {
+              break;
+            }
+            const data = JSON.parse(line.slice(5).trim());
+            console.log(line.slice(6),'line.slice(6)',data,'data');
+            assistantMessage += data.delta.content;
+            setMessages((prev: any) => {
+              const lastMessage = prev[prev.length - 1];
+              if (lastMessage?.role === 'assistant') {
+                return [...prev.slice(0, -1), { id: Date.now().toString(), role: 'assistant', content: assistantMessage }];
+              } else {
+                return [...prev, { id: Date.now().toString(), role: 'assistant', content: assistantMessage }];
+              }
             });
           }
-          return newMessages;
-        });
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      toast.error('发送消息失败，请稍后重试');
+      toast.error(error.message || '发送消息失败，请稍后重试');
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: 'assistant',
@@ -139,7 +129,6 @@ const Chat: React.FC = () => {
       setIsFetching(false);
     }
   };
-
   // 处理按键事件
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -147,12 +136,10 @@ const Chat: React.FC = () => {
       sendMessage();
     }
   };
-
   // 自动滚动到底部
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* 顶部导航栏 */}
@@ -162,7 +149,6 @@ const Chat: React.FC = () => {
         </button>
         <h1 className="ml-4 text-xl font-semibold">AI Chat</h1>
       </header>
-
       {/* 主要聊天区域 */}
       <main className="flex-1 overflow-hidden">
         {/* 消息列表容器 */}
@@ -179,8 +165,8 @@ const Chat: React.FC = () => {
               >
                 <div
                   className={`max-w-[80%] rounded-lg p-4 ${message.role === 'user'
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-white dark:bg-gray-800 shadow-sm'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-white dark:bg-gray-800 shadow-sm'
                     }`}
                 >
                   {message.role === 'assistant' && (
@@ -228,7 +214,6 @@ const Chat: React.FC = () => {
           </div>
         </div>
       </main>
-
       {/* 底部输入区域 */}
       <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shrink-0">
         <div className="max-w-4xl mx-auto flex space-x-4">
@@ -244,8 +229,8 @@ const Chat: React.FC = () => {
             onClick={sendMessage}
             disabled={isFetching || !input.trim()}
             className={`p-3 rounded-lg shrink-0 ${isFetching || !input.trim()
-                ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
-                : 'bg-primary-500 text-white hover:bg-primary-600'
+              ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
+              : 'bg-primary-500 text-white hover:bg-primary-600'
               }`}
           >
             <FiSend className="w-6 h-6" />
@@ -256,4 +241,4 @@ const Chat: React.FC = () => {
   );
 };
 
-export default Chat; 
+export default Chat;

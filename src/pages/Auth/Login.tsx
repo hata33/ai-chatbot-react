@@ -6,7 +6,7 @@ import SubmitButton from '@/components/SubmitButton';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setToken, setUser } = useStore();
   const [formState, setFormState] = useState({
@@ -23,7 +23,7 @@ export default function LoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
-          username: formData.get('username'),
+          email: formData.get('email'),
           password: formData.get('password')
         }),
         headers: {
@@ -72,22 +72,22 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-4 sm:px-16">
           <div className="flex flex-col gap-2">
             <label
-              htmlFor=" "
+              htmlFor="email"
               className="text-zinc-600 font-normal dark:text-zinc-400"
             >
-              Username  
+              Email Address
             </label>
             <input
-              id="username"
-              name="username"
+              id="email"
+              name="email"
               className="bg-gray-100 p-2 rounded text-md md:text-sm"
-              type="text"
-              placeholder="username"
-              autoComplete="username"
+              type="email"
+              placeholder="user@acme.com"
+              autoComplete="email"
               required
               autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 

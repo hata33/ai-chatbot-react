@@ -5,7 +5,6 @@ import SubmitButton from '@/components/SubmitButton';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formState, setFormState] = useState({
@@ -22,7 +21,6 @@ export default function RegisterPage() {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify({
-          username: formData.get('username'),
           email: formData.get('email'),
           password: formData.get('password')
         }),
@@ -67,26 +65,6 @@ export default function RegisterPage() {
           </p>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-4 sm:px-16">
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="username"
-              className="text-zinc-600 font-normal dark:text-zinc-400"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              className="bg-gray-100 p-2 rounded text-md md:text-sm"
-              type="text"
-              placeholder="username"
-              autoComplete="username"
-              required
-              autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
           <div className="flex flex-col gap-2">
             <label
               htmlFor="email"

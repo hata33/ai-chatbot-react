@@ -75,7 +75,7 @@ const Chat: React.FC = () => {
     try {
       // 转换消息格式
       const formattedMessages = [
-        { role: "system", content: "You are a helpful assistant." },
+        // { role: "system", content: "You are a helpful assistant." },
         ...messages.map(msg => ({ role: msg.role, content: msg.content })),
         { role: userMessage.role, content: userMessage.content }
       ];

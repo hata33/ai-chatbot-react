@@ -9,7 +9,7 @@ const ErrorBoundary = () => {
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">Oops! Something went wrong</h1>
         <p className="text-gray-600 mb-4">Please try refreshing the page</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600"
         >
@@ -36,22 +36,22 @@ const Chat = lazy(() => import('@/pages/Chat/Chat'));
 // 路由守卫组件
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = useStore((state) => state.token);
-  
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
 // 已登录用户访问登录页面重定向
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const token = useStore((state) => state.token);
-  
+
   if (token) {
     return <Navigate to="/chat" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -92,13 +92,28 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'chat',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <PrivateRoute>
-              <Chat />
-            </PrivateRoute>
-          </Suspense>
-        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <PrivateRoute>
+                  <Chat />
+                </PrivateRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <PrivateRoute>
+                  <Chat />
+                </PrivateRoute>
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: '*',

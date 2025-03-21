@@ -6,14 +6,10 @@ import { useStore } from '@/store/store';
 import { FiMenu, FiSend } from 'react-icons/fi';
 import { RiRobot2Line } from 'react-icons/ri';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { http } from '@/utils/request';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { generateUUID } from '@/utils/utils';
+import ChatMessage, { Message } from '@/components/ChatMessage';
 
 interface CodeProps {
   node?: any;
@@ -37,6 +33,15 @@ const Chat: React.FC = () => {
   const { currentModel, setCurrentModel, token } = useStore();
   const navigate = useNavigate();
 
+  const { id: urlId } = useParams<{ id: string }>();
+  const chatId = useRef(urlId || generateUUID());
+  // 组件挂载时，如果 URL 中没有 ID，则更新 URL
+  useEffect(() => {
+    if (!urlId) {
+      console.log(chatId)
+      window.history.replaceState({}, '', `/chat/${chatId.current}`);
+    }
+  }, []);
   // 自动滚动处理
   const scrollToBottom = throttle(() => {
     if (autoScroll && messagesEndRef.current) {
@@ -83,6 +88,7 @@ const Chat: React.FC = () => {
       const response = await http.stream('chat', {
         messages: formattedMessages,
         model: "deepseek-chat",
+        id: chatId.current,
       });
 
       const reader = response.body?.getReader();
@@ -100,11 +106,11 @@ const Chat: React.FC = () => {
         const lines = chunk.split('\n\n').filter((line) => line.trim());
         for (const line of lines) {
           if (line.startsWith('data:')) {
-            if (line.slice(6)==='[DONE]') {
+            if (line.slice(6) === '[DONE]') {
               break;
             }
             const data = JSON.parse(line.slice(5).trim());
-            console.log(line.slice(6),'line.slice(6)',data,'data');
+            console.log(line.slice(6), 'line.slice(6)', data, 'data');
             assistantMessage += data.delta.content;
             setMessages((prev: any) => {
               const lastMessage = prev[prev.length - 1];
@@ -140,6 +146,29 @@ const Chat: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // 获取历史消息
+  const fetchHistoryMessages = async (chatId: string) => {
+    try {
+      const response = await http.get(`/chat/getMessageListById/${chatId}`);
+      if (response.data) {
+        setMessages(response.data.map((i: any) => {
+          return { role: i.role, content: i.content }
+        }));
+      }
+    } catch (error: any) {
+      toast.error(error.message || '获取历史消息失败');
+      console.error('获取历史消息失败:', error);
+    }
+  };
+
+  // 在组件挂载时获取历史消息
+  useEffect(() => {
+    if (urlId) {
+      fetchHistoryMessages(urlId);
+    }
+  }, [urlId]);
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* 顶部导航栏 */}
@@ -158,58 +187,22 @@ const Chat: React.FC = () => {
         >
           <div className="max-w-4xl mx-auto space-y-6">
             {messages.map(message => (
-              <div
+              <ChatMessage
                 key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg p-4 ${message.role === 'user'
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-white dark:bg-gray-800 shadow-sm'
-                    }`}
-                >
-                  {message.role === 'assistant' && (
-                    <div className="flex items-center mb-2">
-                      <RiRobot2Line className="w-6 h-6 mr-2" />
-                      <span className="font-semibold">AI Assistant</span>
-                    </div>
-                  )}
-                  <ReactMarkdown
-                    components={{
-                      code: ({ node, inline, className, children, ...props }: CodeProps) => {
-                        const match = /language-(\w+)/.exec(className || '');
-                        return !inline && match ? (
-                          <Highlight
-                            code={String(children).replace(/\n$/, '')}
-                            language={match[1]}
-                            theme={themes.oneDark}
-                          >
-                            {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                              <pre className={`${className} p-4 rounded-md overflow-auto`} style={style}>
-                                {tokens.map((line, i) => (
-                                  <div key={i} {...getLineProps({ line })}>
-                                    {line.map((token, key) => (
-                                      <span key={key} {...getTokenProps({ token })} />
-                                    ))}
-                                  </div>
-                                ))}
-                              </pre>
-                            )}
-                          </Highlight>
-                        ) : (
-                          <code className={`${className} bg-gray-100 dark:bg-gray-700 rounded px-1`} {...props}>
-                            {children}
-                          </code>
-                        );
-                      },
-                    }}
-                  >
-                    {message.content}
-                  </ReactMarkdown>
+                message={message}
+                isDark={false/* 根据您的主题状态传入 */}
+              />
+            ))}
+            {isFetching && (
+              <div className="flex justify-start">
+                <div className="max-w-[80%] rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
+                  <div className="flex items-center">
+                    <RiRobot2Line className="w-6 h-6 mr-2" />
+                    <div className="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+                  </div>
                 </div>
               </div>
-            ))}
+            )}
             <div ref={messagesEndRef} />
           </div>
         </div>

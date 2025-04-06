@@ -66,60 +66,64 @@ const Chat: React.FC = () => {
   // 发送消息
   const sendMessage = async () => {
     if (!input.trim() || isFetching) return;
-
+  
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: input.trim()
     };
-
-    setMessages(prev => [...prev.slice(-3), userMessage]);
+  
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsFetching(true);
-
+  
     try {
-      // 转换消息格式
       const formattedMessages = [
-        // { role: "system", content: "You are a helpful assistant." },
         ...messages.map(msg => ({ role: msg.role, content: msg.content })),
         { role: userMessage.role, content: userMessage.content }
       ];
-
+  
       const response = await http.stream('chat', {
         messages: formattedMessages,
         model: "deepseek-chat",
         id: chatId.current,
       });
-
+  
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No response reader');
-
+  
       let assistantMessage = '';
       const decoder = new TextDecoder();
-
+      let assistantMessageId = Date.now().toString();
+  
+      // 先添加一个空的助理消息
+      setMessages(prev => [...prev, {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: ''
+      }]);
+  
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
+  
         const chunk = decoder.decode(value);
-
         const lines = chunk.split('\n\n').filter((line) => line.trim());
+  
         for (const line of lines) {
           if (line.startsWith('data:')) {
             if (line.slice(6) === '[DONE]') {
               break;
             }
             const data = JSON.parse(line.slice(5).trim());
-            console.log(line.slice(6), 'line.slice(6)', data, 'data');
             assistantMessage += data.delta.content;
-            setMessages((prev: any) => {
-              const lastMessage = prev[prev.length - 1];
-              if (lastMessage?.role === 'assistant') {
-                return [...prev.slice(0, -1), { id: Date.now().toString(), role: 'assistant', content: assistantMessage }];
-              } else {
-                return [...prev, { id: Date.now().toString(), role: 'assistant', content: assistantMessage }];
-              }
-            });
+            
+            // 更新现有的助理消息而不是创建新的
+            setMessages(prev => prev.map(msg => 
+              msg.id === assistantMessageId 
+                ? { ...msg, content: assistantMessage } 
+                : msg
+            ));
           }
         }
       }
@@ -134,7 +138,7 @@ const Chat: React.FC = () => {
     } finally {
       setIsFetching(false);
     }
-  };
+  }; 
   // 处理按键事件
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

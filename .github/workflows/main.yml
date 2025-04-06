@@ -1,0 +1,29 @@
+name: Frontend Deployment to Alibaba Cloud - Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Alibaba Cloud
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          password: ${{ secrets.PASSWORD }}  # SSH 密码
+          port: ${{ secrets.PORT }}  # SSH 端口
+          debug: true
+          script: |
+            cd ${{ secrets.REMOTE_DIR }}
+            git pull origin main
+            npm i -g pnpm
+            pnpm i
+            pnpm run build
+            nginx -s reload

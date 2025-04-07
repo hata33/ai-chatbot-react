@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/store';
 import { useNavigate } from 'react-router-dom';
-import { FiLogOut, FiMessageSquare } from 'react-icons/fi';
+import { FiLogOut, FiMessageSquare, FiX, FiChevronLeft } from 'react-icons/fi';
 import { toast } from 'sonner';
 
 interface ChatSession {
@@ -20,6 +20,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSele
   const { user, logout } = useStore();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 监听窗口大小变化
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 750);
+    };
+
+    // 初始检查
+    checkMobile();
+
+    // 添加窗口大小变化监听
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 处理退出登录
   const handleLogout = async () => {
@@ -33,12 +48,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSele
   };
 
   return (
-    <div
-      className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 transform transition-transform duration-300 ease-in-out ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}
-    >
+    <div className="h-full w-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
       <div className="flex flex-col h-full">
+        {/* 顶部关闭按钮 */}
+        <div className="flex justify-end p-2">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          >
+            {isMobile ? <FiX className="w-5 h-5" /> : <FiChevronLeft className="w-5 h-5" />}
+          </button>
+        </div>
+
         {/* 会话列表 */}
         <div className="flex-1 overflow-y-auto p-4">
           <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">会话列表</h2>
@@ -46,7 +67,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSele
             {chatSessions.map((session) => (
               <button
                 key={session.id}
-                onClick={() => onSelectChat(session.id)}
+                onClick={() => {
+                  onSelectChat(session.id);
+                  if (isMobile) onClose();
+                }}
                 className="w-full flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <FiMessageSquare className="w-5 h-5 mr-2" />

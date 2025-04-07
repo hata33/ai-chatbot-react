@@ -27,6 +27,7 @@ const Chat: React.FC = () => {
   const [autoScroll, setAutoScroll] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [chatSessions, setChatSessions] = useState<{ id: string; title: string }[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -66,6 +67,28 @@ const Chat: React.FC = () => {
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // 监听窗口大小变化
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 750;
+      setIsMobile(mobile);
+      // 在移动设备上默认关闭侧边栏
+      if (mobile) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+
+    // 初始检查
+    checkMobile();
+
+    // 添加窗口大小变化监听
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // 发送消息
   const sendMessage = async () => {
     if (!input.trim() || isFetching) return;
@@ -199,78 +222,106 @@ const Chat: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
-      {/* 顶部导航栏 */}
-      <header className="flex items-center h-16 px-4 bg-white border-b border-gray-200 dark:border-gray-700 shrink-0">
-        <button 
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-2 hover:bg-gray-100 rounded-lg"
-        >
-          <FiMenu className="w-6 h-6" />
-        </button>
-        <h1 className="ml-4 text-xl font-semibold">AI Chat</h1>
-      </header>
-
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* 侧边栏 */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        chatSessions={chatSessions}
-        onSelectChat={handleSelectChat}
-      />
+      <div
+        className={`${
+          isMobile
+            ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out'
+            : 'flex-shrink-0'
+        } ${
+          isSidebarOpen
+            ? isMobile
+              ? 'translate-x-0'
+              : 'w-64'
+            : isMobile
+              ? '-translate-x-full'
+              : 'hidden'
+        }`}
+      >
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          chatSessions={chatSessions}
+          onSelectChat={handleSelectChat}
+        />
+      </div>
 
-      {/* 主要聊天区域 */}
-      <main className="flex-1 overflow-hidden">
-        {/* 消息列表容器 */}
+      {/* 遮罩层 */}
+      {isMobile && isSidebarOpen && (
         <div
-          ref={chatContainerRef}
-          className="h-full overflow-y-auto px-4 py-6 space-y-6"
-        >
-          <div className="max-w-4xl mx-auto space-y-6">
-            {messages.map(message => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                isDark={false/* 根据您的主题状态传入 */}
-              />
-            ))}
-            {isFetching && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
-                  <div className="flex items-center">
-                    <RiRobot2Line className="w-6 h-6 mr-2" />
-                    <div className="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* 右侧内容区域 */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* 顶部导航栏 */}
+        <header className="flex items-center h-16 px-4 bg-white border-b border-gray-200 dark:border-gray-700 shrink-0">
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
+            <FiMenu className="w-6 h-6" />
+          </button>
+          <h1 className="ml-4 text-xl font-semibold">AI Chat</h1>
+        </header>
+
+        {/* 聊天区域 */}
+        <main className="flex-1 overflow-hidden bg-white dark:bg-gray-800">
+          <div
+            ref={chatContainerRef}
+            className="h-full overflow-y-auto px-4 py-6 space-y-6"
+          >
+            <div className="max-w-4xl mx-auto space-y-6">
+              {messages.map(message => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  isDark={false}
+                />
+              ))}
+              {isFetching && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm">
+                    <div className="flex items-center">
+                      <RiRobot2Line className="w-6 h-6 mr-2" />
+                      <div className="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+              )}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
-        </div>
-      </main>
-      {/* 底部输入区域 */}
-      <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shrink-0">
-        <div className="max-w-4xl mx-auto flex space-x-4">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="输入消息..."
-            className="flex-1 p-3 border border-gray-200 dark:border-gray-700 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-            rows={1}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={isFetching || !input.trim()}
-            className={`p-3 rounded-lg shrink-0 ${isFetching || !input.trim()
-              ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
-              : 'bg-primary-500 text-white hover:bg-primary-600'
+        </main>
+
+        {/* 底部输入区域 */}
+        <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shrink-0">
+          <div className="max-w-4xl mx-auto flex space-x-4">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="输入消息..."
+              className="flex-1 p-3 border border-gray-200 dark:border-gray-700 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              rows={1}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={isFetching || !input.trim()}
+              className={`p-3 rounded-lg shrink-0 ${
+                isFetching || !input.trim()
+                  ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
+                  : 'bg-primary-500 text-white hover:bg-primary-600'
               }`}
-          >
-            <FiSend className="w-6 h-6" />
-          </button>
-        </div>
-      </footer>
+            >
+              <FiSend className="w-6 h-6" />
+            </button>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 };

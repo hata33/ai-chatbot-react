@@ -10,6 +10,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { http } from '@/utils/request';
 import { generateUUID } from '@/utils/utils';
 import ChatMessage, { Message } from '@/components/ChatMessage';
+import Sidebar from '@/components/Sidebar';
 
 interface CodeProps {
   node?: any;
@@ -24,6 +25,8 @@ const Chat: React.FC = () => {
   const [input, setInput] = useState('');
   const [isFetching, setIsFetching] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [chatSessions, setChatSessions] = useState<{ id: string; title: string }[]>([]);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -154,6 +157,7 @@ const Chat: React.FC = () => {
   // 获取历史消息
   const fetchHistoryMessages = async (chatId: string) => {
     try {
+      const response2 = await http.get(`/chat/list`);
       const response = await http.get(`/chat/getMessageListById/${chatId}`);
       if (response.data) {
         setMessages(response.data.map((i: any) => {
@@ -173,15 +177,48 @@ const Chat: React.FC = () => {
     }
   }, [urlId]);
 
+  // 获取会话列表
+  const fetchChatSessions = async () => {
+    try {
+      const response = await http.get('/chat/list');
+      setChatSessions(response.data.chats || []);
+    } catch (error) {
+      console.error('获取会话列表失败:', error);
+    }
+  };
+
+  // 处理会话选择
+  const handleSelectChat = (id: string) => {
+    navigate(`/chat/${id}`);
+    setIsSidebarOpen(false);
+  };
+
+  // 在组件挂载时获取会话列表
+  useEffect(() => {
+    fetchChatSessions();
+  }, []);
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* 顶部导航栏 */}
-      <header className="flex items-center h-16 px-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+      <header className="flex items-center h-16 px-4 bg-white border-b border-gray-200 dark:border-gray-700 shrink-0">
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 hover:bg-gray-100 rounded-lg"
+        >
           <FiMenu className="w-6 h-6" />
         </button>
         <h1 className="ml-4 text-xl font-semibold">AI Chat</h1>
       </header>
+
+      {/* 侧边栏 */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        chatSessions={chatSessions}
+        onSelectChat={handleSelectChat}
+      />
+
       {/* 主要聊天区域 */}
       <main className="flex-1 overflow-hidden">
         {/* 消息列表容器 */}

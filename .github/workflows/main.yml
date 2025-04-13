@@ -43,6 +43,7 @@ jobs:
           script: |
             cd ${{ secrets.REMOTE_DIR }}
             git pull origin main
+            npm install -g pnpm@latest
             pnpm install # 使用 runner 中安装的 pnpm 安装依赖
             pnpm run build # 使用 runner 中安装的 pnpm 构建项目
             sudo nginx -s reload # 注意：可能需要 sudo 来执行 nginx 命令

@@ -9,18 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     steps:
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Check pnpm version and PATH
-        run: |
-          echo "pnpm version:"
-          pnpm -v
-          echo "PATH environment variable:"
-          echo "$PATH"
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -30,7 +18,10 @@ jobs:
           node-version: 18.20.6
           cache: 'pnpm'
 
-      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 'latest'
 
       - name: Deploy to Alibaba Cloud
         uses: appleboy/ssh-action@v0.1.10
@@ -43,7 +34,6 @@ jobs:
           script: |
             cd ${{ secrets.REMOTE_DIR }}
             git pull origin main
-            npm install -g pnpm@latest
-            pnpm install # 使用 runner 中安装的 pnpm 安装依赖
-            pnpm run build # 使用 runner 中安装的 pnpm 构建项目
-            sudo nginx -s reload # 注意：可能需要 sudo 来执行 nginx 命令
+            node /www/server/nodejs/v18.12.1/lib/node_modules/pnpm/bin/pnpm.cjs install
+            node /www/server/nodejs/v18.12.1/lib/node_modules/pnpm/bin/pnpm.cjs run build
+            sudo nginx -s reload

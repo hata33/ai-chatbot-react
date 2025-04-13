@@ -17,7 +17,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSelectChat }) => {
-  const { user, logout } = useStore();
+  const { user, logout, currentChatId, setCurrentChatId } = useStore();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -47,6 +47,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSele
     }
   };
 
+  // 处理选择对话
+  const handleSelectChat = (id: string) => {
+    setCurrentChatId(id);
+    onSelectChat(id);
+    if (isMobile) onClose();
+  };
+
   return (
     <div className="h-full w-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
       <div className="flex flex-col h-full">
@@ -67,11 +74,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSele
             {chatSessions.map((session) => (
               <button
                 key={session.id}
-                onClick={() => {
-                  onSelectChat(session.id);
-                  if (isMobile) onClose();
-                }}
-                className="w-full flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                onClick={() => handleSelectChat(session.id)}
+                className={`w-full flex items-center p-2 rounded-lg transition-colors ${
+                  currentChatId === session.id
+                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
               >
                 <FiMessageSquare className="w-5 h-5 mr-2" />
                 <span className="truncate">{session.title || '新会话'}</span>

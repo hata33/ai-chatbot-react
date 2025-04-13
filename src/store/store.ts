@@ -10,6 +10,8 @@ interface StoreState {
   logout: () => void;
   currentModel: string;
   setCurrentModel: (model: string) => void;
+  currentChatId: string | null;
+  setCurrentChatId: (chatId: string | null) => void;
 }
 
 // 创建 Zustand 状态管理器
@@ -23,6 +25,8 @@ export const useStore = create(
       logout: () => set({ user: null, token: null }),
       currentModel: 'gpt-3.5-turbo',
       setCurrentModel: (model) => set({ currentModel: model }),
+      currentChatId: null,
+      setCurrentChatId: (chatId) => set({ currentChatId: chatId }),
     }),
     {
       name: 'auth-storage', // 存储的名称

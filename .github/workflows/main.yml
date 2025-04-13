@@ -1,44 +1,14 @@
-name: Frontend Deployment to Alibaba Cloud - Production
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Check pnpm version and PATH
-        run: |
-          echo "pnpm version:"
-          pnpm -v
-          echo "PATH environment variable:"
-          echo "$PATH"
-
+steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.20.6
-          cache: 'pnpm'
-
-      
+        uses: actions/checkout@v3
 
       - name: Deploy to Alibaba Cloud
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
-          password: ${{ secrets.PASSWORD }} # SSH 密码
-          port: ${{ secrets.PORT }} # SSH 端口
+          password: ${{ secrets.PASSWORD }}  # SSH 密码
+          port: ${{ secrets.PORT }}  # SSH 端口
           debug: true
           script: |
             cd ${{ secrets.REMOTE_DIR }}

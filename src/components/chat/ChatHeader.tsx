@@ -16,7 +16,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ isSidebarOpen, onToggleSidebar 
       >
         <FiMenu className="w-6 h-6" />
       </button>
-      <h1 className="ml-4 text-xl font-semibold">AI Chat</h1>
+      <h1 className="ml-4 text-xl font-semibold">AI Chat1</h1>
     </header>
   );
 };

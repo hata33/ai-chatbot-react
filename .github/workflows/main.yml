@@ -12,23 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js and pnpm
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.20.6' # 替换为你的项目所需的 Node.js 版本
-          package-manager: pnpm
-
       - name: Deploy to Alibaba Cloud
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
-          password: ${{ secrets.PASSWORD }} # SSH 密码
-          port: ${{ secrets.PORT }} # SSH 端口
+          password: ${{ secrets.PASSWORD }}  # SSH 密码
+          port: ${{ secrets.PORT }}  # SSH 端口
           debug: true
           script: |
             cd ${{ secrets.REMOTE_DIR }}
             git pull origin main
+            npm install -g pnpm@latest
             pnpm i
             pnpm run build
             nginx -s reload

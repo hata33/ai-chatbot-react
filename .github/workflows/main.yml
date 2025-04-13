@@ -9,15 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.20.6
-          cache: 'pnpm'
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -29,6 +20,17 @@ jobs:
           pnpm -v
           echo "PATH environment variable:"
           echo "$PATH"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.20.6
+          cache: 'pnpm'
+
+      
 
       - name: Deploy to Alibaba Cloud
         uses: appleboy/ssh-action@v0.1.10

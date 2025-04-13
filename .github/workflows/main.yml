@@ -12,6 +12,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*' # Or specify your required Node.js version
+
+      - name: Install pnpm on runner
+        run: npm install -g pnpm@latest
+
       - name: Deploy to Alibaba Cloud
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -21,11 +29,8 @@ jobs:
           port: ${{ secrets.PORT }} # SSH 端口
           debug: true
           script: |
-            echo "Installing pnpm..."
-            npm install -g pnpm@latest
-            echo "pnpm installed. Now installing dependencies..."
+            cd ${{ secrets.REMOTE_DIR }}
+            git pull origin main
             pnpm i
-            echo "Dependencies installed. Building..."
             pnpm run build
-            echo "Build complete. Reloading Nginx..."
             sudo nginx -s reload # 注意：可能需要 sudo 来执行 nginx 命令

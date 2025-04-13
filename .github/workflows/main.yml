@@ -7,18 +7,21 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # 使用更新的 Ubuntu 版本
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # 使用最新的 checkout action
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*' # Or specify your required Node.js version
+          node-version: 'lts/*' # 或者你项目需要的 Node.js 版本
+          cache: 'pnpm' # 启用 pnpm 缓存
 
-      - name: Install pnpm on runner
-        run: npm install -g pnpm@latest
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 'latest' # 或者指定你需要的 pnpm 版本，例如 8
 
       - name: Deploy to Alibaba Cloud
         uses: appleboy/ssh-action@v0.1.10
@@ -31,6 +34,6 @@ jobs:
           script: |
             cd ${{ secrets.REMOTE_DIR }}
             git pull origin main
-            pnpm i
-            pnpm run build
+            pnpm install # 使用 runner 中安装的 pnpm 安装依赖
+            pnpm run build # 使用 runner 中安装的 pnpm 构建项目
             sudo nginx -s reload # 注意：可能需要 sudo 来执行 nginx 命令

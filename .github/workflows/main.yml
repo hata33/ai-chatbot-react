@@ -1,4 +1,14 @@
-steps:
+name: Frontend Deployment to Alibaba Cloud - Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
 

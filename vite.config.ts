@@ -21,11 +21,13 @@ export default defineConfig(({ command, mode }) => {
     },
     server: {
       port: 80,
+      open: true,
       proxy: {
         '/api': {
           target: env.VITE_API_URL,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
+          rewrite: (path) => path.replace(/^\/api/, ''), // 移除/api前缀
+          secure: false,
         },
       },
     },

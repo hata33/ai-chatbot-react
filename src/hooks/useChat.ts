@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { http } from '@/utils/request';
 import { generateUUID } from '@/utils/utils';
 import { Message } from '@/components/ChatMessage';
+import { useStore } from '@/store/store';
 
 export const useChat = () => {
   // 状态管理
@@ -19,14 +20,30 @@ export const useChat = () => {
 
   const navigate = useNavigate();
   const { id: urlId } = useParams<{ id: string }>();
-  const chatId = useRef(urlId || generateUUID());
+  const { currentChatId, setCurrentChatId } = useStore();
+  const chatId = useRef(urlId || currentChatId || generateUUID());
+
+  // 监听 URL 变化，更新当前对话 ID
+  useEffect(() => {
+    if (urlId) {
+      setCurrentChatId(urlId);
+      chatId.current = urlId;
+      // 清空当前消息列表
+      setMessages([]);
+      // 获取新对话的历史消息
+      fetchHistoryMessages(urlId);
+    }
+  }, [urlId, setCurrentChatId]);
 
   // 组件挂载时，如果 URL 中没有 ID，则更新 URL
   useEffect(() => {
     if (!urlId) {
-      window.history.replaceState({}, '', `/chat/${chatId.current}`);
+      const newChatId = currentChatId || generateUUID();
+      chatId.current = newChatId;
+      setCurrentChatId(newChatId);
+      navigate(`/chat/${newChatId}`, { replace: true });
     }
-  }, []);
+  }, [urlId, currentChatId, setCurrentChatId, navigate]);
 
   // 自动滚动处理
   const scrollToBottom = () => {
@@ -86,7 +103,7 @@ export const useChat = () => {
       setMessages(prev => [...prev, {
         id: assistantMessageId,
         role: 'assistant',
-        content: ''
+        content: '',
       }]);
   
       while (true) {
@@ -112,6 +129,9 @@ export const useChat = () => {
           }
         }
       }
+
+      // 清空草稿
+      localStorage.removeItem(`chat_draft_${chatId.current}`);
     } catch (error: any) {
       console.error('Error:', error);
       toast.error(error.message || '发送消息失败，请稍后重试');
@@ -127,7 +147,7 @@ export const useChat = () => {
 
   // 处理按键事件
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -144,7 +164,7 @@ export const useChat = () => {
       const response = await http.get(`/chat/getMessageListById/${chatId}`);
       if (response.data) {
         setMessages(response.data.map((i: any) => {
-          return { role: i.role, content: i.content }
+          return { role: i.role, content: i.content,createdAt: i.createdAt }
         }));
       }
     } catch (error: any) {
@@ -152,13 +172,6 @@ export const useChat = () => {
       console.error('获取历史消息失败:', error);
     }
   };
-
-  // 在组件挂载时获取历史消息
-  useEffect(() => {
-    if (urlId) {
-      fetchHistoryMessages(urlId);
-    }
-  }, [urlId]);
 
   // 获取会话列表
   const fetchChatSessions = async () => {
@@ -172,6 +185,7 @@ export const useChat = () => {
 
   // 处理会话选择
   const handleSelectChat = (id: string) => {
+    setCurrentChatId(id);
     navigate(`/chat/${id}`);
   };
 

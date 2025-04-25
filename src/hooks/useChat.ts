@@ -70,49 +70,49 @@ export const useChat = () => {
   // 发送消息
   const sendMessage = async () => {
     if (!input.trim() || isFetching) return;
-  
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: input.trim()
     };
-  
+
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsFetching(true);
-  
+
     try {
       const formattedMessages = [
         ...messages.map(msg => ({ role: msg.role, content: msg.content })),
         { role: userMessage.role, content: userMessage.content }
       ];
-  
+
       const response = await http.stream('chat', {
         messages: formattedMessages,
         model: "deepseek-chat",
         id: chatId.current,
       });
-  
+
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No response reader');
-  
+
       let assistantMessage = '';
       const decoder = new TextDecoder();
       let assistantMessageId = Date.now().toString();
-  
+
       setMessages(prev => [...prev, {
         id: assistantMessageId,
         role: 'assistant',
         content: '',
       }]);
-  
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-  
+
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n\n').filter((line) => line.trim());
-  
+
         for (const line of lines) {
           if (line.startsWith('data:')) {
             if (line.slice(6) === '[DONE]') {
@@ -120,10 +120,10 @@ export const useChat = () => {
             }
             const data = JSON.parse(line.slice(5).trim());
             assistantMessage += data.delta.content;
-            
-            setMessages(prev => prev.map(msg => 
-              msg.id === assistantMessageId 
-                ? { ...msg, content: assistantMessage } 
+
+            setMessages(prev => prev.map(msg =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: assistantMessage }
                 : msg
             ));
           }
@@ -146,10 +146,13 @@ export const useChat = () => {
   };
 
   // 处理按键事件
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // 检查是否是 Ctrl + Enter 组合键
+    if (e.code === 'Enter' && e.ctrlKey) {
       e.preventDefault();
-      sendMessage();
+      if (!isFetching && input.trim()) {
+        sendMessage();
+      }
     }
   };
 
@@ -164,7 +167,7 @@ export const useChat = () => {
       const response = await http.get(`/chat/getMessageListById/${chatId}`);
       if (response.data) {
         setMessages(response.data.map((i: any) => {
-          return { role: i.role, content: i.content,createdAt: i.createdAt }
+          return { role: i.role, content: i.content, createdAt: i.createdAt }
         }));
       }
     } catch (error: any) {

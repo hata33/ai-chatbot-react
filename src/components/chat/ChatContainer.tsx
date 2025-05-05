@@ -19,7 +19,8 @@ const ChatContainer: React.FC = () => {
     chatContainerRef,
     sendMessage,
     handleKeyPress,
-    handleSelectChat
+    handleSelectChat,
+    createNewChat
   } = useChat();
 
   // 监听窗口大小变化
@@ -66,6 +67,7 @@ const ChatContainer: React.FC = () => {
           onClose={() => setIsSidebarOpen(false)}
           chatSessions={chatSessions}
           onSelectChat={handleSelectChat}
+          onCreateChat={createNewChat}
         />
       </div>
 

@@ -197,6 +197,19 @@ export const useChat = () => {
     fetchChatSessions();
   }, []);
 
+  // 创建新对话
+  const createNewChat = () => {
+    const newChatId = generateUUID();
+    // 清空当前消息
+    setMessages([]);
+    // 更新当前对话 ID
+    setCurrentChatId(newChatId);
+    chatId.current = newChatId;
+    // 更新 URL
+    navigate(`/chat/${newChatId}`);
+    toast.success('已创建新对话');
+  };
+
   return {
     messages,
     input,
@@ -208,6 +221,7 @@ export const useChat = () => {
     sendMessage,
     handleKeyPress,
     handleSelectChat,
+    createNewChat,
     chatId: chatId.current
   };
 }; 

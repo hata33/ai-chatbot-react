@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/store';
 import { useNavigate } from 'react-router-dom';
-import { FiLogOut, FiMessageSquare, FiX, FiChevronLeft } from 'react-icons/fi';
+import { FiLogOut, FiMessageSquare, FiX, FiChevronLeft, FiPlus } from 'react-icons/fi';
 import { toast } from 'sonner';
 
 interface ChatSession {
@@ -14,9 +14,10 @@ interface SidebarProps {
   onClose: () => void;
   chatSessions: ChatSession[];
   onSelectChat: (id: string) => void;
+  onCreateChat: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSelectChat }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSelectChat, onCreateChat }) => {
   const { user, logout, currentChatId, setCurrentChatId } = useStore();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -54,6 +55,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSele
     if (isMobile) onClose();
   };
 
+  // 处理创建新对话
+  const handleCreateChat = () => {
+    onCreateChat();
+    if (isMobile) onClose();
+  };
+
   return (
     <div className="h-full w-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
       <div className="flex flex-col h-full">
@@ -69,7 +76,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, chatSessions, onSele
 
         {/* 会话列表 */}
         <div className="flex-1 overflow-y-auto p-4">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">会话列表</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">会话列表</h2>
+            <button
+              onClick={handleCreateChat}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300"
+              aria-label="创建新对话"
+            >
+              <FiPlus className="w-5 h-5" />
+            </button>
+          </div>
           <div className="space-y-2">
             {chatSessions.map((session) => (
               <button

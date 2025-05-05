@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { FiSend } from "react-icons/fi";
 import { debounce } from "lodash";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 // 存储键名常量
 const STORAGE_KEYS = {
@@ -20,7 +22,7 @@ interface ChatInputProps {
   setInput: (value: string) => void;
   isFetching: boolean;
   onSendMessage: () => void;
-  onKeyPress: (e: React.KeyboardEvent) => void;
+  onKeyPress: (e: any) => void;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -161,31 +163,28 @@ const ChatInput: React.FC<ChatInputProps> = ({
   return (
     <div className="max-w-4xl mx-auto flex flex-col space-y-2">
       <div className="flex space-x-4">
-        <textarea
+        <Textarea
           ref={textareaRef}
           value={input}
           onChange={handleInputChange}
           onKeyPress={onKeyPress}
           placeholder="输入消息..."
-          className="flex-1 p-3 border border-gray-200 dark:border-gray-700 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-          style={{ minHeight: "44px", maxHeight: "200px" }}
-          aria-label="消息输入框"
+          className="flex-1 min-h-[44px] max-h-[200px] resize-none"
+          style={{ height: textareaRef.current?.style.height }}
         />
-        <button
+        <Button
           onClick={onSendMessage}
           disabled={isFetching || !input.trim()}
-          className={`p-3 rounded-lg shrink-0 ${
-            isFetching || !input.trim()
-              ? "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
-              : "bg-primary-500 text-white hover:bg-primary-600"
-          }`}
+          variant={isFetching || !input.trim() ? "secondary" : "default"}
+          size="icon"
+          className="shrink-0"
           aria-label="发送消息"
         >
-          <FiSend className="w-6 h-6" />
-        </button>
+          <FiSend className="w-5 h-5" />
+        </Button>
       </div>
       {lastSavedTime && (
-        <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+        <div className="text-xs text-muted-foreground text-right">
           自动保存于 {lastSavedTime}
         </div>
       )}

@@ -1,13 +1,77 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
+    
+    <!-- 核心 SEO 优化 -->
+    <title>AI Chat 智能聊天助手 - 高效沟通解决方案 | Hataa</title>
+    <meta name="description" content="Hataa AI Chat 是一款先进的智能聊天助手，提供实时对话、多轮会话、卡片管理等功能，帮助个人和企业提升沟通效率。支持多种场景应用，免费试用。" />
+    <meta name="keywords" content="AI聊天助手,智能对话机器人,Hataa AI,聊天机器人,人工智能对话,在线客服助手,智能问答系统" />
+    <meta name="author" content="Hataa AI Team" />
+    <link rel="canonical" href="https://hataa.top" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hataa.top/" />
+    <meta property="og:title" content="AI Chat 智能聊天助手 - 高效沟通解决方案 | Hataa" />
+    <meta property="og:description" content="Hataa AI Chat 是一款先进的智能聊天助手，提供实时对话、多轮会话、卡片管理等功能，帮助个人和企业提升沟通效率。" />
+    <meta property="og:image" content="https://hataa.top/images/og-image.jpg" />
+    <meta property="og:site_name" content="Hataa" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://hataa.top/" />
+    <meta property="twitter:title" content="AI Chat 智能聊天助手 - 高效沟通解决方案 | Hataa" />
+    <meta property="twitter:description" content="Hataa AI Chat 是一款先进的智能聊天助手，提供实时对话、多轮会话、卡片管理等功能，帮助个人和企业提升沟通效率。" />
+    <meta property="twitter:image" content="https://hataa.top/images/og-image.jpg" />
+    
+    <!-- 移动端优化 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Hataa AI Chat" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- PWA 支持 -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- 预加载关键资源 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- 百度站长验证 -->
+    <meta name="baidu-site-verification" content="your-baidu-verification-code" />
+    
+    <!-- Google Search Console 验证 -->
+    <meta name="google-site-verification" content="your-google-verification-code" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- 百度统计 -->
+    <script>
+      var _hmt = _hmt || [];
+      (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?your-baidu-tracking-id";
+        var s = document.getElementsByTagName("script")[0]; 
+        s.parentNode.insertBefore(hm, s);
+      })();
+    </script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
   </body>
 </html>

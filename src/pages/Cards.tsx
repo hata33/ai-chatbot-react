@@ -17,6 +17,17 @@ const Cards = () => {
   const [loading, setLoading] = useState(false);
   const [editingCard, setEditingCard] = useState<CardItem | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测是否为移动设备
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 处理返回聊天页面
   const handleBackToChat = () => {
@@ -110,7 +121,7 @@ const Cards = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
       {/* 返回按钮 */}
       <div className="flex items-center mb-4">
         <button
@@ -124,9 +135,9 @@ const Cards = () => {
       </div>
 
       {/* 新增卡片表单 */}
-      <Card>
+      <Card className="w-full">
         <CardHeader>
-          <CardTitle>新增卡片</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">新增卡片</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -134,7 +145,7 @@ const Cards = () => {
             value={newCardTitle}
             onChange={(e) => setNewCardTitle(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full"
+            className="w-full text-base"
             disabled={loading}
           />
           <Input
@@ -142,7 +153,7 @@ const Cards = () => {
             value={newCardContent}
             onChange={(e) => setNewCardContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full"
+            className="w-full text-base"
             disabled={loading}
           />
           <Button 
@@ -156,7 +167,7 @@ const Cards = () => {
       </Card>
 
       {/* 卡片列表 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map((card) => (
           <Card 
             key={card.id}
@@ -164,13 +175,13 @@ const Cards = () => {
             onClick={() => handleCardClick(card)}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium">
+              <CardTitle className="text-base sm:text-lg font-medium truncate max-w-[70%]">
                 {editingCard?.id === card.id ? (
                   <Input
                     value={editingCard.title}
                     onChange={(e) => setEditingCard({ ...editingCard, title: e.target.value })}
                     onKeyDown={handleKeyDown}
-                    className="w-full"
+                    className="w-full text-base"
                   />
                 ) : (
                   card.title
@@ -182,7 +193,7 @@ const Cards = () => {
                     e.stopPropagation();
                     setEditingCard(card);
                   }}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   aria-label="编辑卡片"
                 >
                   <FiEdit2 className="w-4 h-4" />
@@ -192,7 +203,7 @@ const Cards = () => {
                     e.stopPropagation();
                     handleDeleteCard(card.id);
                   }}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   aria-label="删除卡片"
                 >
                   <FiTrash2 className="w-4 h-4" />
@@ -205,12 +216,12 @@ const Cards = () => {
                   value={editingCard.content}
                   onChange={(e) => setEditingCard({ ...editingCard, content: e.target.value })}
                   onKeyDown={handleKeyDown}
-                  className="w-full"
+                  className="w-full text-base"
                 />
               ) : (
-                <p className="text-gray-600">{card.content}</p>
+                <p className="text-sm sm:text-base text-gray-600 line-clamp-3">{card.content}</p>
               )}
-              <p className="text-sm text-gray-400 mt-2">{card.createdAt}</p>
+              <p className="text-xs sm:text-sm text-gray-400 mt-2">{card.createdAt}</p>
             </CardContent>
           </Card>
         ))}

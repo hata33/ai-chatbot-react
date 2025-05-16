@@ -24,6 +24,6 @@ jobs:
             cd ${{ secrets.REMOTE_DIR }}
             git pull origin main
             npm install -g pnpm@latest
-            node /www/server/nodejs/v18.12.1/lib/node_modules/pnpm/bin/pnpm.cjs install
-            node /www/server/nodejs/v18.12.1/lib/node_modules/pnpm/bin/pnpm.cjs run build
+            node /usr/lib/node_modules/pnpm/bin/pnpm.cjs install
+            node /usr/lib/node_modules/pnpm/bin/pnpm.cjs run build
             sudo nginx -s reload

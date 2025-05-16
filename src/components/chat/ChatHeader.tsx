@@ -1,5 +1,6 @@
 import React from "react";
-import { FiMenu, FiSettings, FiHelpCircle, FiSun, FiMoon } from "react-icons/fi";
+import { FiMenu, FiSettings, FiHelpCircle, FiSun, FiMoon, FiGrid } from "react-icons/fi";
+import { useNavigate } from 'react-router-dom';
 
 interface ChatHeaderProps {
   isSidebarOpen: boolean;
@@ -14,6 +15,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   isDarkMode = false,
   onToggleDarkMode,
 }) => {
+  const navigate = useNavigate();
+
+  const handleNavigateToCards = () => {
+    navigate('/cards');
+  };
+
   return (
     <header className="flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200 dark:border-gray-700 shrink-0">
       <div className="flex items-center">
@@ -28,6 +35,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
       </div>
       
       <div className="flex items-center space-x-2">
+        <button
+          onClick={handleNavigateToCards}
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          aria-label="查看卡片"
+        >
+          <FiGrid className="w-6 h-6" />
+        </button>
         <button
           onClick={onToggleDarkMode}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"

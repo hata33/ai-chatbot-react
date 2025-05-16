@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { FiHome, FiSettings, FiHelpCircle } from 'react-icons/fi';
+import { FiHome, FiSettings, FiHelpCircle, FiGrid } from 'react-icons/fi';
 
 const AppLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -11,15 +11,24 @@ const AppLayout: React.FC = () => {
       <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex">
+            <div className="flex space-x-4">
               <div className="flex-shrink-0 flex items-center">
                 <button
                   onClick={() => navigate('/')}
                   className="text-gray-800 dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-400"
+                  aria-label="首页"
                 >
                   <FiHome className="w-6 h-6" />
                 </button>
               </div>
+              <button
+                onClick={() => navigate('/cards')}
+                className="flex items-center text-gray-800 dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-400"
+                aria-label="卡片"
+              >
+                <FiGrid className="w-6 h-6" />
+                <span className="ml-2">卡片</span>
+              </button>
             </div>
             <div className="flex items-center space-x-4">
               <button

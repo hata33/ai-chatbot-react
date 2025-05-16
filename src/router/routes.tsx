@@ -32,6 +32,7 @@ const AppLayout = lazy(() => import('@/pages/AppLayout'));
 const Login = lazy(() => import('@/pages/Auth/Login'));
 const Register = lazy(() => import('@/pages/Auth/Register'));
 const Chat = lazy(() => import('@/pages/Chat/Chat'));
+const Cards = lazy(() => import('@/pages/Cards'));
 
 // 路由守卫组件
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -114,6 +115,16 @@ export const routes: RouteObject[] = [
             ),
           },
         ],
+      },
+      {
+        path: 'cards',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PrivateRoute>
+              <Cards />
+            </PrivateRoute>
+          </Suspense>
+        ),
       },
       {
         path: '*',

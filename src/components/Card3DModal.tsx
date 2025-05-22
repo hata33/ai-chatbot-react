@@ -107,16 +107,25 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
 
   return (
     <Dialog open={!!card} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[100vh] p-0 bg-transparent border-none">
-        <DialogTitle className="sr-only">卡片详情</DialogTitle>
+      <DialogContent className=" p-0 bg-transparent border-none"> 
         <div 
           ref={containerRef}
-          className="relative w-full h-full flex items-center justify-center "
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
+          className="relative flex items-center justify-center"
+          onMouseDown={(e) => {
+            // 如果点击的是卡片内容区域，才启动拖动
+            if ((e.target as HTMLElement).closest('.card-content')) {
+              handleMouseDown(e);
+            }
+          }}
+          onTouchStart={(e) => {
+            // 如果触摸的是卡片内容区域，才启动拖动
+            if ((e.target as HTMLElement).closest('.card-content')) {
+              handleTouchStart(e);
+            }
+          }}
         >
           <div
-            className="w-[50vh] max-w-[600px] aspect-[1/1.586] px-4 sm:px-6"
+            className="w-[50vh] max-w-[600px] aspect-[1/1.586] card-content"
             style={{
               transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
               transition: isDragging.current ? 'none' : 'transform 0.3s ease-out',

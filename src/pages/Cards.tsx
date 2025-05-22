@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { FiEdit2, FiTrash2, FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { CardItem, getAllCards, createCard, updateCard, deleteCard } from '@/api/card';
 import Card3DModal from '@/components/Card3DModal';
+import { Textarea } from "@/components/ui/textarea";
 
 const Cards = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Cards = () => {
   const [editingCard, setEditingCard] = useState<CardItem | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // 检测是否为移动设备
   useEffect(() => {
@@ -52,6 +54,16 @@ const Cards = () => {
   useEffect(() => {
     loadCards();
   }, []);
+
+  // 处理输入变化
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setNewCardContent(value);
+    // 直接更新 DOM 值，减少状态更新延迟
+    if (textareaRef.current) {
+      textareaRef.current.value = value;
+    }
+  };
 
   // 处理新增卡片
   const handleAddCard = async () => {
@@ -148,12 +160,14 @@ const Cards = () => {
             className="w-full text-base"
             disabled={loading}
           />
-          <Input
+          <Textarea
+            ref={textareaRef}
             placeholder="请输入卡片内容"
             value={newCardContent}
-            onChange={(e) => setNewCardContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-full text-base"
+            onChange={handleContentChange} 
+            className="w-full min-h-[100px] max-h-[200px] resize-none"
+            style={{ height: textareaRef.current?.style.height }}
+            autoHeight={true}
             disabled={loading}
           />
           <Button 

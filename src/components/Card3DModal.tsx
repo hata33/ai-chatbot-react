@@ -107,36 +107,40 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
 
   return (
     <Dialog open={!!card} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] p-0 bg-transparent border-none">
+      <DialogContent className="max-w-4xl h-[100vh] p-0 bg-transparent border-none">
         <DialogTitle className="sr-only">卡片详情</DialogTitle>
         <div 
           ref={containerRef}
-          className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing"
+          className="relative w-full h-full flex items-center justify-center "
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            aria-label="关闭"
-          >
-            <FiX className="w-6 h-6 text-white" />
-          </button>
           <div
-            className="w-full max-w-2xl px-4 sm:px-6"
+            className="w-[50vh] max-w-[600px] aspect-[1/1.586] px-4 sm:px-6"
             style={{
               transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
               transition: isDragging.current ? 'none' : 'transform 0.3s ease-out',
             }}
           >
-            <Card className="w-full h-full bg-white/95 backdrop-blur-sm shadow-2xl">
-              <CardHeader>
-                <CardTitle className="text-xl sm:text-2xl">{card.title}</CardTitle>
+            <Card className="w-full h-full bg-white/95 backdrop-blur-sm shadow-2xl flex flex-col">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                  {card.title}
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-base sm:text-lg text-gray-600 whitespace-pre-wrap">{card.content}</p>
-                <p className="text-sm text-gray-400 mt-4">{card.createdAt}</p>
+              <CardContent className="flex-1 overflow-y-auto">
+                <div className="prose prose-sm sm:prose-base max-w-none">
+                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {card.content}
+                  </p>
+                </div>
               </CardContent>
+              <div className="px-6 py-3 border-t border-gray-100">
+                <p className="text-xs sm:text-sm text-gray-500 flex items-center justify-end">
+                  <span className="mr-2">创建时间：</span>
+                  {card.createdAt}
+                </p>
+              </div>
             </Card>
           </div>
         </div>

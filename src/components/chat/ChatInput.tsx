@@ -74,7 +74,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const debouncedSave = useCallback(
     debounce((value: string) => {
       saveDraft(value);
-    }, 1000),
+    }, 3000),
     [saveDraft]
   );
 
@@ -140,6 +140,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
+      // 直接更新 DOM 值，减少状态更新延迟
+      if (textareaRef.current) {
+        textareaRef.current.value = value;
+      }
       setInput(value);
       debouncedSave(value);
     },
@@ -156,9 +160,22 @@ const ChatInput: React.FC<ChatInputProps> = ({
       }
     };
 
+    // 添加输入事件监听器
+    const handleInput = (e: Event) => {
+      const target = e.target as HTMLTextAreaElement;
+      if (target === textareaRef.current) {
+        adjustTextareaHeight();
+      }
+    };
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    textareaRef.current?.addEventListener("input", handleInput);
+    
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      textareaRef.current?.removeEventListener("input", handleInput);
+    };
+  }, [adjustTextareaHeight]);
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col space-y-2">

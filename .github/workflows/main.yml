@@ -12,18 +12,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy to Alibaba Cloud
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.17.0
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install and Build
+        run: |
+          npm install -g pnpm@latest
+          pnpm install --no-frozen-lockfile
+          pnpm build
+
+      - name: Upload build artifacts to Alibaba Cloud
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          source: "dist/*"  # 本地构建产物目录，根据你的项目调整
+          target: "${{ secrets.REMOTE_DIR }}"
+          overwrite: true
+          strip_components: 1  # 移除 dist/ 目录层级
+
+      - name: Restart Nginx
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
-          password: ${{ secrets.PASSWORD }}  # SSH 密码
-          port: ${{ secrets.PORT }}  # SSH 端口
-          debug: true
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
           script: |
-            cd ${{ secrets.REMOTE_DIR }}
-            git pull origin main
-            npm install -g pnpm@latest
-            node /usr/lib/node_modules/pnpm/bin/pnpm.cjs install
-            node /usr/lib/node_modules/pnpm/bin/pnpm.cjs run build
             sudo nginx -s reload
+            sudo nginx -t  # 验证配置是否正确

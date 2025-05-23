@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import SubmitButton from '@/components/SubmitButton';
+import { useStore } from '@/store/store';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setToken, setUser } = useStore();
   const [formState, setFormState] = useState({
     status: 'idle',
     message: ''
@@ -32,92 +37,89 @@ export default function RegisterPage() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(data.message || '注册失败');
       }
 
-      setFormState({ status: 'success', message: 'Account created successfully' });
-      toast.success('Account created successfully');
-      navigate('/dashboard');
+      // 存储 token 和用户信息
+      setToken(data.token);
+      setUser(data.user);
+
+      setFormState({ status: 'success', message: '注册成功' });
+      toast.success('注册成功');
+      
+      // 确保在存储完 token 后再跳转
+      setTimeout(() => {
+        navigate('/chat', { replace: true });
+      }, 100);
+
     } catch (error: any) {
       setFormState({ 
         status: 'error',
-        message: error.message || 'Failed to create account'
+        message: error.message || '注册失败'
       });
-      toast.error(error.message || 'Failed to create account');
+      toast.error(error.message || '注册失败');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    if (formState.status === 'success') {
-      navigate('/login');
-    }
-  }, [formState.status, navigate]);
-
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-background">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl gap-12 flex flex-col">
-        <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
-          <h3 className="text-xl font-semibold dark:text-zinc-50">Sign Up</h3>
-          <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Create an account with your email and password
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <h3 className="text-2xl font-semibold">注册</h3>
+          <p className="text-sm text-muted-foreground">
+            创建您的账户
           </p>
-        </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-4 sm:px-16">
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="email"
-              className="text-zinc-600 font-normal dark:text-zinc-400"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              className="bg-gray-100 p-2 rounded text-md md:text-sm"
-              type="email"
-              placeholder="user@acme.com"
-              autoComplete="email"
-              required
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">邮箱地址</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="user@example.com"
+                autoComplete="email"
+                required
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="password"
-              className="text-zinc-600 font-normal dark:text-zinc-400"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              className="bg-gray-100 p-2 rounded text-md md:text-sm"
-              type="password"
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">密码</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+              />
+            </div>
 
-          <SubmitButton isSubmitting={isSubmitting}>
-            {isSubmitting ? 'Creating Account...' : 'Sign Up'}
-          </SubmitButton>
-          
-          <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
-            {'Already have an account? '}
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? '注册中...' : '注册'}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-muted-foreground">
+            已有账户？{" "}
             <Link
               to="/login"
-              className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
+              className="font-medium text-primary hover:underline"
             >
-              Sign in
+              登录
             </Link>
-            {' instead.'}
           </p>
-        </form>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

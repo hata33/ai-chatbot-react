@@ -6,31 +6,27 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { NotificationService } from '@/services/notification';
-
-// 定义类型
-type Frequency = 'daily' | 'weekly' | 'custom';
-
-interface Answer {
-  date: string;
-  text: string;
-  keywords?: string[];
-}
-
-interface ReflectionData {
-  question: string;
-  frequency: Frequency;
-  answers: Answer[];
-}
+import { AnswerTree } from './components/AnswerTree';
+import { Answer, ReflectionData, ReflectionQuestion } from './components/types';
+import { v4 as uuidv4 } from 'uuid';
+import { QuestionList } from './components/QuestionList';
+import { QuestionDetail } from './components/QuestionDetail';
 
 // 本地存储键
 const STORAGE_KEY = 'reflection_data';
 
+// 视图类型
+type ViewMode = 'list' | 'detail';
+
 export default function Reflection() {
-  const [data, setData] = useState<ReflectionData | null>(null);
-  const [question, setQuestion] = useState('');
-  const [frequency, setFrequency] = useState<Frequency>('daily');
+  const [data, setData] = useState<ReflectionData>({ questions: [] });
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'custom'>('daily');
   const [answer, setAnswer] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const notificationService = NotificationService.getInstance();
 
   // 加载数据
@@ -52,63 +48,89 @@ export default function Reflection() {
     setData(newData);
   };
 
-  // 处理问题提交
+  // 处理问题创建
   const handleQuestionSubmit = async () => {
-    if (!question.trim()) {
+    if (!newQuestion.trim()) {
       toast.error('请输入问题');
       return;
     }
 
-    const newData: ReflectionData = {
-      question: question.trim(),
+    const newQuestionData: ReflectionQuestion = {
+      id: uuidv4(),
+      question: newQuestion.trim(),
       frequency,
+      createdAt: new Date().toISOString(),
       answers: [],
     };
 
+    const newData: ReflectionData = {
+      questions: [...(data?.questions||[]), newQuestionData],
+    };
+
     saveData(newData);
-    toast.success('问题已设置');
+    setNewQuestion('');
+    setIsCreating(false);
+    toast.success('问题已创建');
 
     // 设置提醒
-    await notificationService.scheduleReflectionReminder(newData.question, newData.frequency);
+    await notificationService.scheduleReflectionReminder(
+      newQuestionData.question,
+      newQuestionData.frequency
+    );
   };
 
   // 处理答案提交
-  const handleAnswerSubmit = () => {
-    if (!data) return;
-    if (!answer.trim()) {
+  const handleAnswerSubmit = (text: string, parentId?: string) => {
+    if (!selectedQuestionId) return;
+    if (!text.trim()) {
       toast.error('请输入答案');
       return;
     }
 
-    // 检查提交间隔
-    const lastAnswer = data.answers[data.answers.length - 1];
-    if (lastAnswer) {
-      const lastDate = new Date(lastAnswer.date);
-      const now = new Date();
-      const hoursDiff = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursDiff < 6) {
-        toast.error('请至少等待6小时后再提交新的答案');
-        return;
+    const question = data.questions.find(q => q.id === selectedQuestionId);
+    if (!question) return;
+
+    // 检查提交间隔（仅对根回答进行检查）
+    if (!parentId) {
+      const lastAnswer = question.answers.find(a => !a.parentId);
+      if (lastAnswer) {
+        const lastDate = new Date(lastAnswer.date);
+        const now = new Date();
+        const hoursDiff = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
+        
+        if (hoursDiff < 6) {
+          toast.error('请至少等待6小时后再提交新的答案');
+          return;
+        }
       }
     }
 
     setIsSubmitting(true);
 
-    const newAnswer: Answer = {
+    const newAnswer = {
+      id: uuidv4(),
       date: new Date().toISOString(),
-      text: answer.trim(),
+      text: text.trim(),
+      author: '我',
+      parentId,
+      children: [],
+    };
+
+    const updatedQuestion = {
+      ...question,
+      answers: [...question.answers, newAnswer],
     };
 
     const newData: ReflectionData = {
-      ...data,
-      answers: [...data.answers, newAnswer],
+      questions: data.questions.map(q =>
+        q.id === selectedQuestionId ? updatedQuestion : q
+      ),
     };
 
     saveData(newData);
     setAnswer('');
     setIsSubmitting(false);
-    toast.success(`已保存第${newData.answers.length}次回答`);
+    toast.success('回答已保存');
   };
 
   // 获取情绪图标
@@ -121,19 +143,36 @@ export default function Reflection() {
     return '😐';
   };
 
-  // 渲染问题设置表单
-  if (!data) {
+  // 处理视图切换
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    if (mode === 'list') {
+      setSelectedQuestionId(null);
+    }
+  };
+
+  // 渲染创建问题表单
+  if (isCreating) {
     return (
       <div className="container mx-auto p-4 max-w-2xl">
         <Card className="p-6">
-          <h1 className="text-2xl font-bold mb-6">设置你的反思问题</h1>
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => setIsCreating(false)}
+              className="text-gray-500"
+            >
+              ← 返回
+            </Button>
+            <h1 className="text-2xl font-bold">创建新问题</h1>
+          </div>
           <div className="space-y-4">
             <Input
               placeholder="输入你想反复思考的问题，例如：我真正想要的是什么？"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
+              value={newQuestion}
+              onChange={(e) => setNewQuestion(e.target.value)}
             />
-            <Select value={frequency} onValueChange={(value: Frequency) => setFrequency(value)}>
+            <Select value={frequency} onValueChange={(value: 'daily' | 'weekly' | 'custom') => setFrequency(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="选择提醒频率" />
               </SelectTrigger>
@@ -144,7 +183,7 @@ export default function Reflection() {
               </SelectContent>
             </Select>
             <Button onClick={handleQuestionSubmit} className="w-full">
-              开始探索
+              创建问题
             </Button>
           </div>
         </Card>
@@ -152,46 +191,38 @@ export default function Reflection() {
     );
   }
 
-  // 渲染回答界面
+  // 渲染问题详情
+  if (viewMode === 'detail' && selectedQuestionId) {
+    const question = data.questions.find(q => q.id === selectedQuestionId);
+    if (!question) return null;
+
+    return (
+      <div className="container mx-auto p-4 max-w-2xl">
+        <QuestionDetail
+          question={question}
+          onAnswerSubmit={handleAnswerSubmit}
+          onBack={() => handleViewModeChange('list')}
+          isSubmitting={isSubmitting}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+        />
+      </div>
+    );
+  }
+
+  // 渲染问题列表
   return (
     <div className="container mx-auto p-4 max-w-2xl">
-      <Card className="p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">今日问题：{data.question}</h2>
-        <Textarea
-          placeholder="想到什么就写什么，无需修饰..."
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
-          className="h-[150px] mb-4"
-        />
-        <div className="flex justify-between items-center">
-          <p className="text-sm text-gray-500">
-            这是你第{data.answers.length + 1}次回答这个问题
-          </p>
-          <Button onClick={handleAnswerSubmit} disabled={isSubmitting}>
-            保存本次答案
-          </Button>
-        </div>
-      </Card>
-
-      {/* 历史记录 */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">历史记录</h3>
-        <div className="space-y-4">
-          {data.answers.slice(-3).reverse().map((item, index) => (
-            <div key={item.date} className="border-b pb-4 last:border-b-0">
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-sm text-gray-500">
-                  {new Date(item.date).toLocaleDateString()}
-                </span>
-                <span className="text-lg">{getEmotionIcon(item.text)}</span>
-              </div>
-              <p className="text-gray-700">
-                {item.text.length > 30 ? `${item.text.slice(0, 30)}...` : item.text}
-              </p>
-            </div>
-          ))}
-        </div>
-      </Card>
+      <QuestionList
+        questions={data.questions}
+        onQuestionClick={(id) => {
+          setSelectedQuestionId(id);
+          setViewMode('detail');
+        }}
+        onCreateNew={() => setIsCreating(true)}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+      />
     </div>
   );
 } 

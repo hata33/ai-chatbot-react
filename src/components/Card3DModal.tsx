@@ -26,6 +26,22 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // 处理鼠标/触摸按下
+  const handleStart = (clientX: number, clientY: number) => {
+    if (!containerRef.current) return;
+    
+    isDragging.current = true;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // 记录初始点击位置相对于卡片中心的位置
+    lastPosition.current = {
+      x: clientX - centerX,
+      y: clientY - centerY
+    };
+  };
+
   // 处理鼠标/触摸移动
   const handleMove = (clientX: number, clientY: number) => {
     if (!isDragging.current || !containerRef.current) return;
@@ -34,12 +50,16 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    // 计算位置相对于容器中心的位置
-    const deltaX = clientX - centerX;
-    const deltaY = clientY - centerY;
+    // 计算当前位置相对于卡片中心的位置
+    const currentX = clientX - centerX;
+    const currentY = clientY - centerY;
+
+    // 计算移动距离
+    const deltaX = currentX - lastPosition.current.x;
+    const deltaY = currentY - lastPosition.current.y;
 
     // 计算旋转角度（限制最大旋转角度）
-    const maxRotation = isMobile.current ? 15 : 20; // 移动端旋转角度稍小
+    const maxRotation = isMobile.current ? 15 : 20;
     const newRotationX = Math.max(Math.min(deltaY / (isMobile.current ? 15 : 10), maxRotation), -maxRotation);
     const newRotationY = Math.max(Math.min(deltaX / (isMobile.current ? 15 : 10), maxRotation), -maxRotation);
 
@@ -64,12 +84,6 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
     isDragging.current = false;
     // 添加平滑过渡效果
     setRotation({ x: 0, y: 0 });
-  };
-
-  // 处理鼠标/触摸按下
-  const handleStart = (clientX: number, clientY: number) => {
-    isDragging.current = true;
-    lastPosition.current = { x: clientX, y: clientY };
   };
 
   // 处理鼠标按下
@@ -125,7 +139,7 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
           }}
         >
           <div
-            className="w-[50vh] max-w-[600px] aspect-[1/1.586] card-content"
+            className="w-[50vh] max-w-[80vw] aspect-[1/1.586] card-content"
             style={{
               transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
               transition: isDragging.current ? 'none' : 'transform 0.3s ease-out',

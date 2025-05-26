@@ -6,7 +6,7 @@ const AppLayout: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen">
       {/* 顶部导航栏 */}
       <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +50,7 @@ const AppLayout: React.FC = () => {
         </div>
       </nav>
 
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full overflow-y-auto">
         <Outlet />
       </main>
     </div>

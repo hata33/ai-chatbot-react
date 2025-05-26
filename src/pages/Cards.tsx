@@ -133,7 +133,7 @@ const Cards = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
+    <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl min-w-0 overflow-y-auto">
       {/* 返回按钮 */}
       <div className="flex items-center mb-4">
         <button

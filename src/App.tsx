@@ -7,7 +7,7 @@ const router = createBrowserRouter(routes);
 
 function App() {
   return (
-    <div className="min-h-screen w-full">
+    <div className="h-screen w-full">
       <Toaster position="top-center" richColors />
       <RouterProvider router={router} />
     </div>

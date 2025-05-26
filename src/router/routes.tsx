@@ -33,6 +33,7 @@ const Login = lazy(() => import('@/pages/Auth/Login'));
 const Register = lazy(() => import('@/pages/Auth/Register'));
 const Chat = lazy(() => import('@/pages/Chat/Chat'));
 const Cards = lazy(() => import('@/pages/Cards'));
+const Reflection = lazy(() => import('@/pages/Reflection/Reflection'));
 
 // 路由守卫组件
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -122,6 +123,16 @@ export const routes: RouteObject[] = [
           <Suspense fallback={<LoadingFallback />}>
             <PrivateRoute>
               <Cards />
+            </PrivateRoute>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'reflection',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PrivateRoute>
+              <Reflection />
             </PrivateRoute>
           </Suspense>
         ),

@@ -32,7 +32,7 @@ const AppLayout = lazy(() => import('@/pages/AppLayout'));
 const Login = lazy(() => import('@/pages/Auth/Login'));
 const Register = lazy(() => import('@/pages/Auth/Register'));
 const Chat = lazy(() => import('@/pages/Chat/Chat'));
-const Cards = lazy(() => import('@/pages/Cards'));
+const Cards = lazy(() => import('@/pages/Cards/index'));
 const Reflection = lazy(() => import('@/pages/Reflection/Reflection'));
 
 // 路由守卫组件

@@ -6,6 +6,12 @@ export interface CardItem {
   title: string;
   content: string;
   createdAt: string;
+  tags: {
+    id: string;
+    name: string;
+    color: string;
+    createdAt: string;
+  }[];
 }
 
 // 创建卡片请求参数类型

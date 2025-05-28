@@ -122,6 +122,7 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
   return (
     <Dialog open={!!card} onOpenChange={onClose}>
       <DialogContent className=" p-0 bg-transparent border-none"> 
+      <DialogTitle className="flex justify-end"></DialogTitle>
         <div 
           ref={containerRef}
           className="relative flex items-center justify-center"
@@ -156,6 +157,18 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
                   <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
                     {card.content}
                   </p>
+                </div>
+                {/* 标签列表 */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {card.tags?.map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="px-2 py-1 text-xs rounded-full"
+                      style={{ backgroundColor: tag.color + '20', color: tag.color }}
+                    >
+                      {tag.name}
+                    </span>
+                  ))}
                 </div>
               </CardContent>
               <div className="px-6 py-3 border-t border-gray-100">

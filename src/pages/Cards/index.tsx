@@ -3,15 +3,18 @@ import { CardItem, getAllCards, deleteCard } from '@/api/card';
 import { toast } from 'sonner';
 import Card3DModal from '@/components/Card3DModal';
 import BackButton from './components/BackButton';
-import CardForm from './components/CardForm';
 import CardList from './components/CardList';
+import CardEditor from './components/CardEditor';
+import { Button } from '@/components/ui/button';
+import { FiPlus } from 'react-icons/fi';
 
 const Cards = () => {
   // 状态管理
   const [cards, setCards] = useState<CardItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editingCard, setEditingCard] = useState<CardItem | null>(null);
 
   // 加载卡片列表
   const loadCards = async () => {
@@ -32,15 +35,14 @@ const Cards = () => {
     loadCards();
   }, []);
 
-  // 处理卡片创建
-  const handleCardCreated = (newCard: CardItem) => {
-    setCards([newCard, ...cards]);
-  };
-
-  // 处理卡片更新
-  const handleCardUpdate = (updatedCard: CardItem) => {
-    setCards(cards.map(c => c.id === updatedCard.id ? updatedCard : c));
-    setEditingCardId(null);
+  // 处理卡片保存
+  const handleCardSave = (card: CardItem) => {
+    if (editingCard) {
+      setCards(cards.map(c => c.id === card.id ? card : c));
+    } else {
+      setCards([card, ...cards]);
+    }
+    setEditingCard(null);
   };
 
   // 处理卡片删除
@@ -57,33 +59,49 @@ const Cards = () => {
 
   // 处理编辑开始
   const handleEditStart = (card: CardItem) => {
-    setEditingCardId(card.id);
+    setEditingCard(card);
+    setIsEditorOpen(true);
   };
 
-  // 处理编辑取消
-  const handleEditCancel = () => {
-    setEditingCardId(null);
+  // 处理新建卡片
+  const handleCreateCard = () => {
+    setEditingCard(null);
+    setIsEditorOpen(true);
   };
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl min-w-0 overflow-y-auto">
-      <BackButton />
-      
-      <CardForm 
-        onCardCreated={handleCardCreated}
-        loading={loading}
-      />
+      <div className="flex items-center justify-between">
+        <BackButton />
+        <Button
+          onClick={handleCreateCard}
+          className="flex items-center gap-2"
+        >
+          <FiPlus className="w-4 h-4" />
+          <span>新建卡片</span>
+        </Button>
+      </div>
 
       <CardList
         cards={cards}
-        onUpdate={handleCardUpdate}
         onDelete={handleDeleteCard}
         onSelect={setSelectedCard}
-        editingCardId={editingCardId}
         onEditStart={handleEditStart}
-        onEditCancel={handleEditCancel}
       />
 
+      {/* 卡片编辑器 */}
+      <CardEditor
+        isOpen={isEditorOpen}
+        onClose={() => {
+          setIsEditorOpen(false);
+          setEditingCard(null);
+        }}
+        onSave={handleCardSave}
+        initialData={editingCard}
+        loading={loading}
+      />
+
+      {/* 3D 卡片弹窗 */}
       <Card3DModal 
         card={selectedCard} 
         onClose={() => setSelectedCard(null)} 

@@ -9,7 +9,7 @@ interface TextareaProps extends React.ComponentProps<"textarea"> {
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, autoHeight = false, minHeight = 60, maxHeight = 200, ...props }, ref) => {
+  ({ className, autoHeight = false, minHeight = 60, maxHeight = 200, style, ...props }, ref) => {
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
     // 合并外部传入的 ref 和内部 ref
@@ -44,6 +44,19 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       }
     }, [props.value, autoHeight, adjustHeight]);
 
+    // 合并样式
+    const mergedStyle = React.useMemo(() => {
+      const baseStyle = {
+        minHeight: autoHeight ? `${minHeight}px` : undefined,
+        ...(autoHeight && { height: textareaRef.current?.style.height }),
+      };
+
+      return {
+        ...baseStyle,
+        ...style
+      };
+    }, [autoHeight, minHeight, style]);
+
     return (
       <textarea
         className={cn(
@@ -51,11 +64,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           autoHeight && "resize-none",
           className
         )}
-        style={{
-          minHeight: `${minHeight}px`,
-          ...(autoHeight && { height: textareaRef.current?.style.height }),
-          ...props.style
-        }}
+        style={mergedStyle}
         ref={combinedRef}
         {...props}
       />

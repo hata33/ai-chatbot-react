@@ -9,13 +9,13 @@ const QuestionItem = ({ question, onClick }: QuestionItemProps) => {
   return (
     <Card 
       className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-      onClick={() => onClick(question.id)}
+      onClick={() => onClick(question.questionId)}
     >
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-lg font-medium mb-2">{question.question}</h3>
+          <h3 className="text-lg font-medium mb-2">{question.questionText}</h3>
           <p className="text-sm text-gray-500">
-            创建于 {new Date(question.createdAt).toLocaleDateString()}
+            创建于 { question.createTime }
           </p>
         </div>
         <div className="text-right">
@@ -78,7 +78,7 @@ export const QuestionList = ({
         <div className="space-y-4">
           {questions?.map((question) => (
             <QuestionItem
-              key={question.id}
+              key={question.questionId}
               question={question}
               onClick={onQuestionClick}
             />

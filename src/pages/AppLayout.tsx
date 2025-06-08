@@ -27,7 +27,7 @@ const AppLayout: React.FC = () => {
                 aria-label="卡片"
               >
                 <FiGrid className="w-6 h-6" />
-                <span className="ml-2">卡片</span>
+                <span className="ml-2 hidden sm:inline">卡片</span>
               </button>
               <button
                 onClick={() => navigate('/reflection')}
@@ -35,7 +35,7 @@ const AppLayout: React.FC = () => {
                 aria-label="思考"
               >
                 <FiBook className="w-6 h-6" />
-                <span className="ml-2">思考</span>
+                <span className="ml-2 hidden sm:inline">思考</span>
               </button>
             </div>
             <div className="flex items-center space-x-4">
@@ -45,6 +45,7 @@ const AppLayout: React.FC = () => {
                 aria-label="设置"
               >
                 <FiSettings className="w-6 h-6" />
+                <span className="ml-2 hidden sm:inline">设置</span>
               </button>
               <button
                 onClick={() => navigate('/help')}
@@ -52,6 +53,7 @@ const AppLayout: React.FC = () => {
                 aria-label="帮助"
               >
                 <FiHelpCircle className="w-6 h-6" />
+                <span className="ml-2 hidden sm:inline">帮助</span>
               </button>
             </div>
           </div>
@@ -65,4 +67,4 @@ const AppLayout: React.FC = () => {
   );
 };
 
-export default AppLayout; 
+export default AppLayout;  

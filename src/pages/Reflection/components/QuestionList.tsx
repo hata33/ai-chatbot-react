@@ -3,8 +3,7 @@ import { Card } from '@/components/ui/card';
 import { QuestionListProps, QuestionItemProps } from './types';
 
 // 单个问题项组件
-const QuestionItem = ({ question, onClick }: QuestionItemProps) => {
-  const answerCount = question.answers.filter(a => !a.parentId).length;
+const QuestionItem = ({ question, onClick }: QuestionItemProps) => { 
   
   return (
     <Card 
@@ -20,11 +19,9 @@ const QuestionItem = ({ question, onClick }: QuestionItemProps) => {
         </div>
         <div className="text-right">
           <p className="text-sm text-gray-500">
-            {answerCount} 个回答
+            x 个回答
           </p>
-          <p className="text-xs text-gray-400">
-            {question.frequency === 'daily' ? '每日' : 
-             question.frequency === 'weekly' ? '每周' : '自定义'}
+          <p className="text-xs text-gray-400"> 
           </p>
         </div>
       </div>

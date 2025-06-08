@@ -10,7 +10,7 @@ export const AnswerItem = ({ answer, onReply, level = 0 }: AnswerItemProps) => {
   // 处理追答提交
   const handleReplySubmit = () => {
     if (!replyText.trim()) return;
-    onReply(answer.id);
+    onReply(answer.answerId);
     setIsReplying(false);
     setReplyText('');
   };
@@ -21,11 +21,10 @@ export const AnswerItem = ({ answer, onReply, level = 0 }: AnswerItemProps) => {
       <div className="bg-gray-50 rounded-lg p-4 mb-2">
         <div className="flex justify-between items-start mb-2">
           <span className="text-sm text-gray-500">
-            {new Date(answer.date).toLocaleString()}
-          </span>
-          <span className="text-sm text-gray-500">{answer.author}</span>
-        </div>
-        <p className="text-gray-700 whitespace-pre-wrap">{answer.text}</p>
+            { answer.createTime }
+          </span> 
+        </div>  
+        <p className="text-gray-700 whitespace-pre-wrap">{answer.content}</p>
       </div>
 
       {/* 追答按钮 */}
@@ -62,17 +61,7 @@ export const AnswerItem = ({ answer, onReply, level = 0 }: AnswerItemProps) => {
             </Button>
           </div>
         </div>
-      )}
-
-      {/* 递归渲染子回答 */}
-      {answer.children?.map((child) => (
-        <AnswerItem
-          key={child.id}
-          answer={child}
-          onReply={onReply}
-          level={level + 1}
-        />
-      ))}
+      )} 
     </div>
   );
 }; 

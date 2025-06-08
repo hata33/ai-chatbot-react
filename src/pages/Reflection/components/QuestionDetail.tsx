@@ -24,7 +24,7 @@ export const QuestionDetail = ({
           >
             ← 返回
           </Button>
-          <h2 className="text-2xl font-bold">{question.question}</h2>
+          <h2 className="text-2xl font-bold">{question.questionText}</h2>
         </div>
         <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
           <Button
@@ -54,7 +54,7 @@ export const QuestionDetail = ({
         />
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-500">
-            这是你第{question.answers.filter(a => !a.parentId).length + 1}次回答这个问题
+            这是你第{question.answers.length}次回答这个问题
           </p>
           <Button disabled={isSubmitting}>
             保存本次答案

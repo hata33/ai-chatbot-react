@@ -1,5 +1,5 @@
-import { AnswerTreeProps, Answer } from './types';
-import { AnswerItem } from './AnswerItem';
+import { AnswerTreeProps, Answer } from "./types";
+import { AnswerItem } from "./AnswerItem";
 
 export const AnswerTree = ({ answers, onReply }: AnswerTreeProps) => {
   // 将扁平的回答数组转换为树形结构
@@ -8,21 +8,15 @@ export const AnswerTree = ({ answers, onReply }: AnswerTreeProps) => {
     const rootAnswers: Answer[] = [];
 
     // 首先创建所有回答的映射
-    answers.forEach(answer => {
-      answerMap.set(answer.id, { ...answer, children: [] });
+    answers.forEach((answer) => {
+      answerMap.set(answer.answerId, { ...answer, children: [] });
     });
 
     // 构建树形结构
-    answers.forEach(answer => {
-      const answerWithChildren = answerMap.get(answer.id);
-      if (answer.parentId) {
-        const parent = answerMap.get(answer.parentId);
-        if (parent) {
-          parent.children.push(answerWithChildren);
-        }
-      } else {
-        rootAnswers.push(answerWithChildren);
-      }
+    answers.forEach((answer) => {
+      const answerWithChildren = answerMap.get(answer.answerId);
+
+      rootAnswers.push(answerWithChildren);
     });
 
     return rootAnswers;
@@ -33,12 +27,8 @@ export const AnswerTree = ({ answers, onReply }: AnswerTreeProps) => {
   return (
     <div className="space-y-4">
       {answerTree.map((answer) => (
-        <AnswerItem
-          key={answer.id}
-          answer={answer}
-          onReply={onReply}
-        />
+        <AnswerItem key={answer.answerId} answer={answer} onReply={onReply} />
       ))}
     </div>
   );
-}; 
+};

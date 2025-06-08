@@ -68,6 +68,8 @@ export interface QuestionListProps {
   questions: Question[];
   onQuestionClick: (id: string) => void;
   onCreateNew: () => void;
+  viewMode: 'list' | 'detail';
+  onViewModeChange: (mode: 'list' | 'detail') => void;
 }
 
 // 反思问题类型定义

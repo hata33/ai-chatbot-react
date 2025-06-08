@@ -77,7 +77,7 @@ export default function Reflection() {
 
     try {
       const newQuestionData = await questionApi.createQuestion({
-        question: newQuestion.trim(),
+        questionText: newQuestion.trim(),
         frequency,
       });
 
@@ -115,31 +115,16 @@ export default function Reflection() {
       return;
     }
 
-    const question = data.questions.find(q => q.id === selectedQuestionId);
-    if (!question) return;
-
-    // 检查提交间隔（仅对根回答进行检查）
-    if (!parentId) {
-      const lastAnswer = question.answers.find(a => !a.parentId);
-      if (lastAnswer) {
-        const lastDate = new Date(lastAnswer.date);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
-        
-        if (hoursDiff < 6) {
-          toast.error('请至少等待6小时后再提交新的答案');
-          return;
-        }
-      }
-    }
+    const question = data.questions.find(q => q.questionId === selectedQuestionId);
+    if (!question) return; 
 
     setIsSubmitting(true);
 
     try {
       const newAnswer = await answerApi.createAnswer({
-        text: text.trim(),
-        author: '我',
-        parentId,
+        content: text.trim(), 
+        questionId: question.questionId,
+        answerType: 0,  
       });
 
       // 确保新答案有children数组
@@ -155,12 +140,11 @@ export default function Reflection() {
 
       setData(prev => ({
         questions: prev.questions.map(q =>
-          q.id === selectedQuestionId ? updatedQuestion : q
+          q.questionId === selectedQuestionId ? updatedQuestion : q
         ),
       }));
 
-      setAnswer('');
-      toast.success('回答已保存');
+      setAnswer(''); 
     } catch (error) {
       toast.error('保存回答失败');
       console.error('保存回答失败:', error);
@@ -231,7 +215,7 @@ export default function Reflection() {
 
   // 渲染问题详情
   if (viewMode === 'detail' && selectedQuestionId) {
-    const question = data.questions.find(q => q.id === selectedQuestionId);
+    const question = data.questions.find(q => q.questionId === selectedQuestionId);
     if (!question) return null;
 
     return (
@@ -255,12 +239,7 @@ export default function Reflection() {
       <div className="flex-none border-b bg-white">
         <div className="container mx-auto p-4 max-w-2xl">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Link to="/">
-                <Button variant="ghost" size="icon">
-                  <Home className="h-5 w-5" />
-                </Button>
-              </Link>
+            <div className="flex items-center gap-2"> 
               <h1 className="text-xl font-bold">反思问题</h1>
             </div>
             <Button

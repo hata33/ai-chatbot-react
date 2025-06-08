@@ -23,7 +23,7 @@ export default function QuestionDetailPage() {
     setIsLoading(true);
     try {
       // 获取问题详情
-      const questionData = await questionApi.getQuestion(id);
+      const questionData:any = await questionApi.getQuestion(id);
       setQuestion(questionData);
 
       // 获取回答列表
@@ -54,12 +54,11 @@ export default function QuestionDetailPage() {
       await answerApi.createAnswer({
         questionId: id,
         content: answer.trim(),
-        answerType: 0,
+        answerType: 0,    
       });
 
       setAnswer('');
-      setIsAnswerVisible(false);
-      toast.success('回答已保存');
+      setIsAnswerVisible(false); 
       // 重新加载数据
       await loadData();
     } catch (error) {

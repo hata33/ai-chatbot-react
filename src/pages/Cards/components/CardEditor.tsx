@@ -51,10 +51,10 @@ const CardEditor = ({
 
   // 处理保存
   const handleSave = async () => {
-    if (!title.trim() || !content.trim()) {
-      toast.error("标题和内容不能为空");
-      return;
-    }
+    // if (!title.trim() || !content.trim()) {
+    //   toast.error("标题和内容不能为空");
+    //   return;
+    // }
 
     try {
       if (isEditing && initialData) {

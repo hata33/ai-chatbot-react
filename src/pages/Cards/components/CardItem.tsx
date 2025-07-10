@@ -1,6 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { CardItem as CardItemType } from '@/api/card';
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
+dayjs.locale('zh-cn');
 
 interface CardItemProps {
   card: CardItemType;
@@ -15,10 +30,19 @@ const CardItem = ({
   onSelect, 
   onEditStart
 }: CardItemProps) => {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   // 处理标签点击
   const handleTagClick = (e: React.MouseEvent, tag: CardItemType['tags'][0]) => {
     e.stopPropagation();
     console.log('Tag clicked:', tag);
+  };
+
+  const formattedDate = dayjs(card.createdAt).format('YYYY年MM月DD日 HH:mm:ss dddd');
+
+  const handleDeleteConfirm = () => {
+    onDelete(card.id);
+    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -41,16 +65,42 @@ const CardItem = ({
           >
             <FiEdit2 className="w-4 h-4" />
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(card.id);
-            }}
-            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            aria-label="删除卡片"
-          >
-            <FiTrash2 className="w-4 h-4" />
-          </button>
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogTrigger asChild>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDeleteDialogOpen(true);
+                }}
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                aria-label="删除卡片"
+              >
+                <FiTrash2 className="w-4 h-4" />
+              </button>
+            </DialogTrigger>
+            <DialogContent onClick={(e) => e.stopPropagation()}>
+              <DialogHeader>
+                <DialogTitle>确认删除</DialogTitle>
+                <DialogDescription>
+                  你确定要删除这张卡片吗？此操作无法撤销。
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDeleteDialogOpen(false)
+                }}>
+                  取消
+                </Button>
+                <Button variant="destructive" onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteConfirm()
+                }}>
+                  确认删除
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </CardHeader>
       <CardContent>
@@ -68,7 +118,7 @@ const CardItem = ({
             </span>
           ))}
         </div>
-        <p className="text-xs sm:text-sm text-gray-400 mt-2">{card.createdAt}</p>
+        <p className="text-xs sm:text-sm text-gray-400 mt-2">{formattedDate}</p>
       </CardContent>
     </Card>
   );

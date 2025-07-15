@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { CardItem } from '@/api/card';
-import { FiX } from 'react-icons/fi';
+import { CardItem } from '@/api/card'; 
 
 interface Card3DModalProps {
   card: CardItem | null;
@@ -122,7 +121,7 @@ const Card3DModal = ({ card, onClose }: Card3DModalProps) => {
   return (
     <Dialog open={!!card} onOpenChange={onClose}>
       <DialogContent className=" p-0 bg-transparent border-none"> 
-      <DialogTitle className="flex justify-end"></DialogTitle>
+      <DialogTitle className="flex justify-end">卡片编辑</DialogTitle>
         <div 
           ref={containerRef}
           className="relative flex items-center justify-center"

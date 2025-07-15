@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CardItem, createCard, updateCard } from "@/api/card";
@@ -8,6 +7,8 @@ import { toast } from "sonner";
 import { FiX } from "react-icons/fi";
 // 引入通用持久化 hooks
 import { usePersistentInput } from "@/hooks/usePersistentInput";
+import ImageUploader from "@/components/ImageUploader";
+import { uploadCardAttachment } from "@/api/card";
 
 interface CardEditorProps {
   isOpen: boolean;
@@ -29,6 +30,9 @@ const CardEditor = ({
   const [content, setContent] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isEditing = !!initialData;
+
+  // 新增图片状态
+  const [images, setImages] = useState<File[]>([]);
 
   // 生成唯一 key，支持多卡片编辑
   const titleKey = initialData
@@ -77,6 +81,10 @@ const CardEditor = ({
   // 处理保存
   const handleSave = async () => {
     try {
+      // 先上传所有图片，获取url数组
+      if (images.length > 0) {
+        await Promise.all(images.map((file) => uploadCardAttachment(file)));
+      }
       if (isEditing && initialData) {
         const updatedCard = await updateCard(initialData.id, {
           title,
@@ -120,6 +128,8 @@ const CardEditor = ({
     }
   };
 
+  const TITLE_OPTIONS = ["工作", "生活", "学习", "社交", "自我"];
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-none w-screen h-screen sm:w-[90vw] sm:h-[90vh] p-0 bg-white dark:bg-gray-900 flex flex-col">
@@ -139,17 +149,40 @@ const CardEditor = ({
 
         {/* 编辑区域 */}
         <div className="flex-1 flex flex-col p-4 gap-4 min-h-0">
-          <Input
-            placeholder="请输入卡片标题"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              debouncedSaveTitle(e.target.value);
-            }}
-            onKeyDown={handleKeyDown}
-            className="w-full text-lg font-medium flex-none"
-            disabled={loading}
-          />
+          {/* 标题单选块 */}
+          <div
+            className="flex flex-row gap-2 mb-2"
+            role="radiogroup"
+            aria-label="卡片类型"
+          >
+            {TITLE_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                role="radio"
+                aria-checked={title === option}
+                tabIndex={0}
+                onClick={() => {
+                  setTitle(option);
+                  debouncedSaveTitle(option);
+                }}
+                className={`px-3 py-2 rounded-lg border text-base font-medium focus:outline-none transition-colors
+                  ${
+                    title === option
+                      ? "bg-blue-600 text-white border-blue-600 shadow"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-700"
+                  }
+                  `}
+                aria-label={option}
+                // 中文注释：高亮选中项，未选中项为灰色
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+          {/* 图片上传区 */}
+          <ImageUploader images={images} onChange={setImages} />
+          {/* 内容输入区 */}
           <div className="flex-1 min-h-0 relative">
             <Textarea
               ref={textareaRef}

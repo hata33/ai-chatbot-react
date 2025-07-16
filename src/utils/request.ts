@@ -110,10 +110,10 @@ export async function request<T = unknown>(
 
 // 便捷方法
 export const http = {
-  get: <T = unknown>(url: string, config?: RequestConfig) =>
+  get: <T = any>(url: string, config?: RequestConfig) =>
     request<T>(url, { ...config, method: 'GET' }),
 
-  post: <T, D = unknown>(url: string, data?: D, config?: RequestConfig) => {
+  post: <T, D = any>(url: string, data?: D, config?: RequestConfig) => {
     let body: BodyInit | undefined = undefined;
     let headers = config?.headers ? { ...config.headers } : {};
     if (data instanceof FormData) {
@@ -127,10 +127,10 @@ export const http = {
     return request<T>(url, { ...config, method: 'POST', body, headers });
   },
 
-  put: <T, D = unknown>(url: string, data?: D, config?: RequestConfig) =>
+  put: <T, D = any>(url: string, data?: D, config?: RequestConfig) =>
     request<T>(url, { ...config, method: 'PUT', body: JSON.stringify(data) }),
 
-  delete: <T = unknown>(url: string, config?: RequestConfig) =>
+  delete: <T = any>(url: string, config?: RequestConfig) =>
     request<T>(url, { ...config, method: 'DELETE' }),
 
   // 流式请求

@@ -82,9 +82,6 @@ const CardEditor = ({
   const handleSave = async () => {
     try {
       // 先上传所有图片，获取url数组
-      if (images.length > 0) {
-        await Promise.all(images.map((file) => uploadCardAttachment(file)));
-      }
       if (isEditing && initialData) {
         const updatedCard = await updateCard(initialData.id, {
           title,
@@ -95,6 +92,9 @@ const CardEditor = ({
         clearDraftContent();
         toast.success("卡片更新成功");
       } else {
+        if (images.length > 0) {
+          await Promise.all(images.map((file) => uploadCardAttachment(file)));
+        }
         const newCard = await createCard({
           title,
           content,

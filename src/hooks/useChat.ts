@@ -187,7 +187,7 @@ export const useChat = () => {
   // 获取会话列表
   const fetchChatSessions = async () => {
     try {
-      const response = await http.get('/chat/list');
+      const response:any = await http.get('/chat/list');
       setChatSessions(response.data.chats || []);
     } catch (error) {
       console.error('获取会话列表失败:', error);
